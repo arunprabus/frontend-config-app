@@ -1,0 +1,15 @@
+{
+  "apiUrl": "${API_URL}",
+  "appName": "${APP_NAME}",
+  "environment": "test",
+  "features": {
+    "authentication": true,
+    "fileUpload": true,
+    "notifications": false,
+    "debugMode": false
+  },
+  "version": "1.0.0-test",
+  "buildTime": "2024-01-01T00:00:00Z",
+  "apiTimeout": 5000,
+  "logLevel": "info"
+}
