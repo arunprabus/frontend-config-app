@@ -6,7 +6,8 @@
     "authentication": false,
     "fileUpload": true,
     "notifications": true,
-    "debugMode": true
+    "debugMode": true,
+    "dynamodb": true
   },
   "version": "1.0.0-dev",
   "buildTime": "2024-01-01T00:00:00Z",
