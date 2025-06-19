@@ -1,42 +1,133 @@
-# Frontend Config App
+# frontend-config-app
 
-A React SPA with runtime configuration support, designed to consume external APIs through environment-injected configuration.
+A production-ready React.js Single Page Application (SPA) designed for runtime configuration via Docker, suitable for multi-environment deployments (Dev, QA, Prod). The app is built using a multi-stage Dockerfile and served with a lightweight NGINX container. Runtime config is injected dynamically at container startup, enabling environment-specific values like API base URLs to be updated without rebuilding the image.
 
-## Features
+---
 
-- **Runtime Configuration**: Load API URLs and settings at container startup
-- **Health Profile Management**: Create, view, and manage health profiles
-- **File Upload**: PDF document upload functionality
-- **Responsive Design**: Mobile-first design with Tailwind CSS
-- **Docker Ready**: Production-ready containerization
+## 🚀 Features
 
-## Quick Start
+- ⚛️ React app (bootstrapped with Create React App)
+- 🐳 Multi-stage Docker build with Node.js and nginx:alpine
+- 🔧 Supports runtime-configurable environment variables
+- 🌐 Custom NGINX setup for SPA routing and config serving
+- 🧩 Easily deployable to cloud platforms and CI/CD pipelines
 
-### Development
-```bash
-npm install
-npm run dev
+---
+
+## 🛠️ Tech Stack
+
+| Layer          | Technology                 |
+|----------------|----------------------------|
+| Frontend       | React.js                   |
+| Build Tool     | Node.js 20.19.1            |
+| Web Server     | nginx:alpine               |
+| Config Runtime | JSON file (`runtime-config.json`) |
+| Container Tool | Docker                     |
+
+---
+
+## 📁 Project Structure
+
+```
+frontend-config-app/
+├── public/
+│   └── index.html
+├── src/
+│   ├── App.js
+│   ├── index.js
+│   └── config/
+│       └── runtime-config.js      # Loads runtime config
+├── nginx.conf                     # NGINX config for SPA + config
+├── Dockerfile                     # Multi-stage with config injection
+├── .dockerignore
+└── README.md
 ```
 
-### Docker Build
+---
+
+## 🔧 Runtime Configuration Pattern
+
+The app supports loading config **dynamically at runtime** from a JSON file (`/assets/runtime-config.json`) which allows you to:
+
+- Use the same Docker image across all environments
+- Avoid rebuilding for simple config changes (e.g., API URLs)
+
+### Sample `runtime-config.json`:
+
+```json
+{
+  "REACT_APP_API_BASE_URL": "https://api.example.com"
+}
+```
+
+### Accessing in Code:
+```js
+import config from './config/runtime-config';
+
+const apiUrl = config.REACT_APP_API_BASE_URL;
+```
+
+---
+
+## 🐳 Docker Usage
+
+### 1. Build the image
+
 ```bash
 docker build -t frontend-config-app .
-docker run -p 8080:80 \
-  -e API_URL=http://localhost:3001/api \
-  -e APP_NAME="Health Profile App" \
-  frontend-config-app
 ```
 
-### Environment Variables
+### 2. Run the container
 
-- `API_URL`: Backend API endpoint (default: http://localhost:3001/api)
-- `APP_NAME`: Application display name
-- `NODE_ENV`: Environment (development/production)
+You can inject runtime values using environment variables or volume mounts, depending on how your entrypoint script is written.
 
-## Architecture
+```bash
+docker run -d -p 8080:80   -e RUNTIME_config_REACT_APP_API_BASE_URL=https://api.dev.com   frontend-config-app
+```
 
-The app loads configuration from `/assets/runtime-config.json` which is generated at container startup from environment variables using the entrypoint script.
+---
 
-## CI/CD
+## ⚙️ NGINX Setup
 
-GitHub Actions automatically builds and pushes container images to GitHub Container Registry on push to main/develop branches.
+The included `nginx.conf`:
+
+- Serves the React build files
+- Handles fallback routing for SPA (`try_files`)
+- Serves `/assets/runtime-config.json` from disk (or volume)
+  
+---
+
+## 🧪 Testing & Dev
+
+While this repo is mainly geared for production, for local development:
+
+```bash
+npm install
+npm start
+```
+
+> The runtime config logic may need to be mocked or adjusted for local dev.
+
+---
+
+## 📦 CI/CD Friendly
+
+Supports CI/CD with tools like:
+
+- GitHub Actions
+- Docker Compose
+- Kubernetes (EKS, ECS)
+- AWS S3 + CloudFront (with custom entrypoint)
+
+---
+
+## 📜 License
+
+MIT License  
+© 2025 [@arunprabus](https://github.com/arunprabus)
+
+---
+
+## 🙌 Credits
+
+Developed with ❤️ for scalable multi-environment frontend delivery using runtime config best practices.
