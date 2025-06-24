@@ -11,14 +11,19 @@ interface Profile {
   insurance_provider: string;
   insurance_number: string;
   pdf_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface ProfileFormData {
+  id?: string;
   name: string;
   blood_group: string;
   insurance_provider: string;
   insurance_number: string;
   pdf_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 function App() {
@@ -34,13 +39,21 @@ function App() {
   };
 
   useEffect(() => {
-    // Clear any cached user data on app start
-    authService.logout();
-    setLoading(false);
+    // Check for existing session instead of clearing it
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      fetchProfile();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const fetchProfile = async () => {
     try {
+      // Refresh auth token first
+      authService.refreshCurrentUser();
+      
       const response = await fetch(`${config.apiUrl}/profile`, {
         headers: authService.getAuthHeaders(),
       });
@@ -75,6 +88,12 @@ function App() {
 
   const handleViewDocument = async () => {
     try {
+      // Store current auth token to ensure it's available
+      const authToken = authService.getCurrentUser()?.accessToken;
+      if (!authToken) {
+        throw new Error('Authentication token not found');
+      }
+      
       // Simple fallback - just open the direct URL
       if (profile?.pdf_url) {
         window.open(profile.pdf_url, '_blank');
@@ -91,11 +110,14 @@ function App() {
   const handleSaveProfile = async (formData: ProfileFormData) => {
     setFormLoading(true);
     try {
+      // Refresh auth token first
+      authService.refreshCurrentUser();
+      
       const method = profile ? 'PUT' : 'POST';
       
-      // Remove pdf_url if empty to avoid validation error
-      const { pdf_url, ...profileData } = formData;
-      const requestData = pdf_url ? formData : profileData;
+      // Remove database fields to avoid validation errors
+      const { pdf_url, id, created_at, updated_at, ...profileData } = formData;
+      const requestData = pdf_url ? { ...profileData, pdf_url } : profileData;
       
       const response = await fetch(`${config.apiUrl}/profile`, {
         method,

@@ -3,11 +3,14 @@ import { User, Mail, Shield, FileText, Upload, Save } from 'lucide-react';
 import { authService } from '../services/auth.service';
 
 interface ProfileFormData {
+  id?: string;
   name: string;
   blood_group: string;
   insurance_provider: string;
   insurance_number: string;
   pdf_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface ProfileFormProps {
@@ -21,7 +24,14 @@ const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = false, initialData, onCancel }) => {
   const [formData, setFormData] = useState<ProfileFormData>(
-    initialData || {
+    initialData ? {
+      // Exclude id from initialData to avoid validation errors
+      name: initialData.name,
+      blood_group: initialData.blood_group,
+      insurance_provider: initialData.insurance_provider,
+      insurance_number: initialData.insurance_number,
+      pdf_url: initialData.pdf_url || ''
+    } : {
       name: '',
       blood_group: '',
       insurance_provider: '',
@@ -63,10 +73,16 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
         apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
       };
 
+      // Store current auth token to ensure it's available for subsequent requests
+      const authToken = authService.getCurrentUser()?.accessToken;
+      if (!authToken) {
+        throw new Error('Authentication token not found');
+      }
+
       const response = await fetch(`${config.apiUrl}/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authService.getCurrentUser()?.accessToken}`
+          'Authorization': `Bearer ${authToken}`
         },
         body: formData
       });
@@ -84,9 +100,39 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
         const fileInput = document.getElementById('file-upload') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
         
-        // Refresh profile to show updated document
-        if (onSubmit) {
-          window.location.reload();
+        // Refresh profile data without page reload
+        try {
+          const config = {
+            apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+          };
+          
+          // Refresh auth token first
+          authService.refreshCurrentUser();
+          
+          const profileResponse = await fetch(`${config.apiUrl}/profile`, {
+            headers: authService.getAuthHeaders()
+          });
+          
+          const profileResult = await profileResponse.json();
+          if (profileResult.success && profileResult.data) {
+            // Update form data with new pdf_url
+            setFormData(prev => ({
+              ...prev,
+              pdf_url: profileResult.data.pdf_url
+            }));
+            
+            // Notify parent component if needed
+            if (onSubmit && initialData) {
+              const { id, created_at, updated_at, ...cleanData } = initialData;
+              const updatedData = {
+                ...cleanData,
+                pdf_url: profileResult.data.pdf_url
+              };
+              await onSubmit(updatedData);
+            }
+          }
+        } catch (error) {
+          console.error('Error refreshing profile:', error);
         }
       } else {
         alert(`❌ Upload failed: ${result.error}`);

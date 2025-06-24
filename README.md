@@ -73,6 +73,39 @@ cp .env.example .env
 npm start
 ```
 
+### Testing
+```bash
+# Run unit tests
+npm test
+
+# Run tests in watch mode during development
+npm run test:watch
+
+# Generate test coverage report
+npm run test:coverage
+
+# Run smoke tests (requires backend to be running)
+npm run smoke
+```
+
+### Docker Deployment
+```bash
+# Quick start with Docker
+cp .env.docker .env
+# Edit .env with your AWS credentials
+docker-compose up -d
+
+# Access application
+# Frontend: http://localhost
+# Backend: http://localhost:8080/api
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
 ### AWS Configuration
 1. **Create S3 Bucket:**
 ```bash
@@ -92,6 +125,12 @@ aws s3api put-public-access-block --bucket health-dashboard-documents --public-a
 - Secure file upload with validation
 - Environment-based configuration
 
+### Testing
+- Unit tests with Vitest and React Testing Library
+- API and service mocking
+- Smoke tests for critical functionality
+- Test coverage reporting
+
 ### Database
 - Clean PostgreSQL schema with proper relationships
 - Automated database migrations
@@ -110,6 +149,12 @@ aws s3api put-public-access-block --bucket health-dashboard-documents --public-a
 - Error handling and logging
 - Responsive UI components
 
+### Deployment
+- Docker containerization with multi-stage builds
+- Docker Compose orchestration
+- Production-ready Nginx configuration
+- Health checks and monitoring
+
 ## 📁 Project Structure
 
 ```
@@ -117,7 +162,17 @@ health-dash/                 # Frontend React application
 ├── src/
 │   ├── components/         # Reusable UI components
 │   ├── services/          # API and authentication services
+│   ├── utils/             # Utility functions and helpers
+│   ├── __tests__/         # Test files
+│   │   ├── smoke/         # Smoke tests
+│   │   └── setup.ts       # Test setup
 │   └── config.ts          # Configuration management
+├── Dockerfile             # Frontend container configuration
+├── nginx.conf             # Nginx configuration
+├── vitest.config.ts        # Test configuration
+├── vitest.smoke.config.ts  # Smoke test configuration
+├── CONTRIBUTING.md        # Contribution guidelines
+├── .env.example           # Example environment variables
 
 health-api/                 # Backend Node.js API
 ├── src/
@@ -125,6 +180,14 @@ health-api/                 # Backend Node.js API
 │   ├── middleware/        # Authentication and validation
 │   ├── utils/             # Database and utility functions
 │   └── index.js           # Main server file
+├── Dockerfile             # Backend container configuration
+├── healthcheck.js         # Container health check
+├── .env.example           # Example environment variables
+
+# Docker Configuration
+├── docker-compose.yml      # Multi-service orchestration
+├── .env.docker            # Docker environment template
+├── DOCKER.md              # Docker deployment guide
 ```
 
 ## 🌟 Key Achievements
@@ -137,6 +200,10 @@ This project demonstrates:
 - **File handling** with secure upload and storage
 - **Responsive UI/UX** with clean, professional design
 - **Production-ready code** with error handling and validation
+- **Comprehensive testing** with unit tests and smoke tests
+- **Developer documentation** with code comments and contribution guidelines
+- **Docker containerization** with multi-service orchestration
+- **Production deployment** ready with health checks and monitoring
 
 ## 🚀 Production Deployment
 
@@ -146,6 +213,27 @@ The application is designed to be production-ready with:
 - Secure authentication and authorization
 - Scalable cloud architecture
 - Clean code structure and documentation
+
+### Docker Deployment
+The application includes complete Docker containerization:
+- **Multi-stage builds** for optimized images
+- **Docker Compose** for service orchestration
+- **Health checks** for all services
+- **Production-ready** Nginx configuration
+- **PostgreSQL** database with persistence
+- **Security best practices** with non-root users
+
+```bash
+# Deploy with Docker
+docker-compose up -d
+```
+
+## 📖 Documentation
+
+- [README.md](README.md) - Project overview and setup
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Detailed development guide
+- [DOCKER.md](DOCKER.md) - Docker deployment guide
 
 ---
 

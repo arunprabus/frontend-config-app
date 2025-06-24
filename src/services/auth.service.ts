@@ -149,13 +149,25 @@ class AuthService {
       console.error('Error during logout:', error);
     }
   }
+  
+  /**
+   * Refreshes the current user from localStorage
+   * @returns The current user or null
+   */
+  refreshCurrentUser(): AuthUser | null {
+    try {
+      const stored = localStorage.getItem('authUser');
+      if (stored) {
+        this.currentUser = JSON.parse(stored);
+        return this.currentUser;
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+    }
+    return this.currentUser;
+  }
 
   getCurrentUser(): AuthUser | null {
-    // In development, don't persist sessions
-    if (import.meta.env.VITE_APP_ENV === 'development') {
-      return this.currentUser;
-    }
-
     if (this.currentUser) {
       return this.currentUser;
     }
