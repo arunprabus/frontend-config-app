@@ -1,133 +1,152 @@
-# frontend-config-app
+# 🏥 Health Dashboard
 
-A production-ready React.js Single Page Application (SPA) designed for runtime configuration via Docker, suitable for multi-environment deployments (Dev, QA, Prod). The app is built using a multi-stage Dockerfile and served with a lightweight NGINX container. Runtime config is injected dynamically at container startup, enabling environment-specific values like API base URLs to be updated without rebuilding the image.
+A comprehensive full-stack health profile management system built with modern web technologies and AWS cloud services.
 
----
+## 🏗️ Architecture
 
-## 🚀 Features
+### Frontend
+- **React 18** with TypeScript
+- **Tailwind CSS** for responsive styling
+- **Vite** for fast development and building
+- **Lucide React** for icons
 
-- ⚛️ React app (bootstrapped with Create React App)
-- 🐳 Multi-stage Docker build with Node.js and nginx:alpine
-- 🔧 Supports runtime-configurable environment variables
-- 🌐 Custom NGINX setup for SPA routing and config serving
-- 🧩 Easily deployable to cloud platforms and CI/CD pipelines
+### Backend
+- **Node.js** with Express.js
+- **PostgreSQL** database with AWS RDS
+- **AWS Cognito** for authentication
+- **AWS S3** for document storage
+- **JWT** token-based security
 
----
+### Cloud Services
+- **AWS Cognito** - User authentication and management
+- **AWS S3** - Secure document storage with user-specific folders
+- **AWS RDS** - PostgreSQL database hosting
 
-## 🛠️ Tech Stack
+## ✨ Features
 
-| Layer          | Technology                 |
-|----------------|----------------------------|
-| Frontend       | React.js                   |
-| Build Tool     | Node.js 20.19.1            |
-| Web Server     | nginx:alpine               |
-| Config Runtime | JSON file (`runtime-config.json`) |
-| Container Tool | Docker                     |
+### 🔐 Authentication
+- ✅ User registration with email verification
+- ✅ Secure login/logout with JWT tokens
+- ✅ Password-based authentication via AWS Cognito
+- ✅ Session management with automatic cleanup
 
----
+### 👤 Profile Management
+- ✅ Create comprehensive health profiles
+- ✅ Edit existing profile information
+- ✅ View profile details in clean interface
+- ✅ Dynamic form validation
+
+### 📄 Document Management
+- ✅ Upload PDF documents (max 10MB)
+- ✅ Automatic old file cleanup when uploading new documents
+- ✅ Secure document viewing with direct S3 access
+- ✅ File validation and error handling
+
+### 🎨 User Experience
+- ✅ Responsive design for all devices
+- ✅ Clean, intuitive interface
+- ✅ Real-time feedback and notifications
+- ✅ Smooth navigation flow
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- AWS Account with Cognito and S3 configured
+- PostgreSQL database (AWS RDS recommended)
+
+### Backend Setup
+```bash
+cd health-api
+npm install
+cp .env.example .env
+# Configure your AWS credentials in .env
+npm start
+```
+
+### Frontend Setup
+```bash
+cd health-dash
+npm install
+cp .env.example .env
+# Configure your API URL and Cognito settings in .env
+npm start
+```
+
+### AWS Configuration
+1. **Create S3 Bucket:**
+```bash
+aws s3 mb s3://health-dashboard-documents --region ap-south-1
+aws s3api put-public-access-block --bucket health-dashboard-documents --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+```
+
+2. **Set up Cognito User Pool** with email verification enabled
+
+3. **Configure RDS PostgreSQL** instance
+
+## 🔧 Technical Highlights
+
+### Security
+- JWT-based authentication with AWS Cognito
+- Authenticated API endpoints with middleware
+- Secure file upload with validation
+- Environment-based configuration
+
+### Database
+- Clean PostgreSQL schema with proper relationships
+- Automated database migrations
+- User-specific data isolation
+- Optimized queries with connection pooling
+
+### File Storage
+- User-specific S3 folders (`userId/document.pdf`)
+- Automatic old file cleanup on new uploads
+- File type and size validation
+- Public read access for document viewing
+
+### Development
+- TypeScript for type safety
+- Environment variable configuration
+- Error handling and logging
+- Responsive UI components
 
 ## 📁 Project Structure
 
 ```
-frontend-config-app/
-├── public/
-│   └── index.html
+health-dash/                 # Frontend React application
 ├── src/
-│   ├── App.js
-│   ├── index.js
-│   └── config/
-│       └── runtime-config.js      # Loads runtime config
-├── nginx.conf                     # NGINX config for SPA + config
-├── Dockerfile                     # Multi-stage with config injection
-├── .dockerignore
-└── README.md
+│   ├── components/         # Reusable UI components
+│   ├── services/          # API and authentication services
+│   └── config.ts          # Configuration management
+
+health-api/                 # Backend Node.js API
+├── src/
+│   ├── routes/            # API route handlers
+│   ├── middleware/        # Authentication and validation
+│   ├── utils/             # Database and utility functions
+│   └── index.js           # Main server file
 ```
 
----
+## 🌟 Key Achievements
 
-## 🔧 Runtime Configuration Pattern
+This project demonstrates:
+- **Full-stack development** with modern JavaScript/TypeScript
+- **Cloud integration** with multiple AWS services
+- **Security best practices** with proper authentication
+- **Database design** with PostgreSQL and migrations
+- **File handling** with secure upload and storage
+- **Responsive UI/UX** with clean, professional design
+- **Production-ready code** with error handling and validation
 
-The app supports loading config **dynamically at runtime** from a JSON file (`/assets/runtime-config.json`) which allows you to:
+## 🚀 Production Deployment
 
-- Use the same Docker image across all environments
-- Avoid rebuilding for simple config changes (e.g., API URLs)
-
-### Sample `runtime-config.json`:
-
-```json
-{
-  "REACT_APP_API_BASE_URL": "https://api.example.com"
-}
-```
-
-### Accessing in Code:
-```js
-import config from './config/runtime-config';
-
-const apiUrl = config.REACT_APP_API_BASE_URL;
-```
+The application is designed to be production-ready with:
+- Environment-based configuration
+- Proper error handling and logging
+- Secure authentication and authorization
+- Scalable cloud architecture
+- Clean code structure and documentation
 
 ---
 
-## 🐳 Docker Usage
-
-### 1. Build the image
-
-```bash
-docker build -t frontend-config-app .
-```
-
-### 2. Run the container
-
-You can inject runtime values using environment variables or volume mounts, depending on how your entrypoint script is written.
-
-```bash
-docker run -d -p 8080:80   -e RUNTIME_config_REACT_APP_API_BASE_URL=https://api.dev.com   frontend-config-app
-```
-
----
-
-## ⚙️ NGINX Setup
-
-The included `nginx.conf`:
-
-- Serves the React build files
-- Handles fallback routing for SPA (`try_files`)
-- Serves `/assets/runtime-config.json` from disk (or volume)
-  
----
-
-## 🧪 Testing & Dev
-
-While this repo is mainly geared for production, for local development:
-
-```bash
-npm install
-npm start
-```
-
-> The runtime config logic may need to be mocked or adjusted for local dev.
-
----
-
-## 📦 CI/CD Friendly
-
-Supports CI/CD with tools like:
-
-- GitHub Actions
-- Docker Compose
-- Kubernetes (EKS, ECS)
-- AWS S3 + CloudFront (with custom entrypoint)
-
----
-
-## 📜 License
-
-MIT License  
-© 2025 [@arunprabus](https://github.com/arunprabus)
-
----
-
-## 🙌 Credits
-
-Developed with ❤️ for scalable multi-environment frontend delivery using runtime config best practices.
+Built with ❤️ using React, Node.js, and AWS Cloud Services

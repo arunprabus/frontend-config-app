@@ -12,5 +12,10 @@
   "version": "1.0.0",
   "buildTime": "2024-01-01T00:00:00Z",
   "apiTimeout": 30000,
-  "logLevel": "error"
+  "logLevel": "error",
+  "cognito": {
+    "userPoolId": "${COGNITO_USER_POOL_ID}",
+    "clientId": "${COGNITO_CLIENT_ID}",
+    "region": "${AWS_REGION}"
+  }
 }

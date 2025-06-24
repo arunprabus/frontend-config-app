@@ -3,7 +3,7 @@
   "appName": "${APP_NAME}",
   "environment": "development",
   "features": {
-    "authentication": false,
+    "authentication": true,
     "fileUpload": true,
     "notifications": true,
     "debugMode": true,
@@ -12,5 +12,10 @@
   "version": "1.0.0-dev",
   "buildTime": "2024-01-01T00:00:00Z",
   "apiTimeout": 10000,
-  "logLevel": "debug"
+  "logLevel": "debug",
+  "cognito": {
+    "userPoolId": "${COGNITO_USER_POOL_ID}",
+    "clientId": "${COGNITO_CLIENT_ID}",
+    "region": "${AWS_REGION}"
+  }
 }

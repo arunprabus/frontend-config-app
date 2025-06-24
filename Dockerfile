@@ -36,10 +36,13 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set default environment variables
-ENV API_URL=http://localhost:3001/api
-ENV APP_NAME="Health Profile Frontend"
+ENV API_URL=http://localhost:8080/api
+ENV APP_NAME="Health Dashboard"
 ENV NODE_ENV=production
 ENV APP_ENV=dev
+ENV COGNITO_USER_POOL_ID=your_user_pool_id
+ENV COGNITO_CLIENT_ID=your_client_id
+ENV AWS_REGION=ap-south-1
 
 # Expose port
 EXPOSE 80

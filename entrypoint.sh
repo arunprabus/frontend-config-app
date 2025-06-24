@@ -19,6 +19,9 @@ echo "  APP_ENV: ${APP_ENV}"
 echo "  API_URL: ${API_URL}"
 echo "  APP_NAME: ${APP_NAME}"
 echo "  NODE_ENV: ${NODE_ENV}"
+echo "  COGNITO_USER_POOL_ID: ${COGNITO_USER_POOL_ID}"
+echo "  COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID}"
+echo "  AWS_REGION: ${AWS_REGION}"
 
 # Create assets directory if it doesn't exist
 mkdir -p /usr/share/nginx/html/assets

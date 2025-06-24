@@ -4,12 +4,12 @@ import { User, Mail, Shield, FileText, Calendar, Trash2 } from 'lucide-react';
 interface Profile {
   id: string;
   name: string;
-  bloodGroup: string;
-  insurance: string;
-  email: string;
-  idProof: string;
-  createdAt: string;
-  updatedAt: string;
+  blood_group: string;
+  insurance_provider: string;
+  insurance_number: string;
+  pdf_url?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface ProfileListProps {
@@ -29,7 +29,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({ profiles, onDelete, lo
     });
   };
 
-  const getBloodGroupColor = (bloodGroup: string) => {
+  const getBloodGroupColor = (blood_group: string) => {
     const colors: { [key: string]: string } = {
       'O+': 'bg-red-100 text-red-800',
       'O-': 'bg-red-200 text-red-900',
@@ -40,7 +40,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({ profiles, onDelete, lo
       'AB+': 'bg-purple-100 text-purple-800',
       'AB-': 'bg-purple-200 text-purple-900'
     };
-    return colors[bloodGroup] || 'bg-gray-100 text-gray-800';
+    return colors[blood_group] || 'bg-gray-100 text-gray-800';
   };
 
   if (loading) {
@@ -83,31 +83,33 @@ export const ProfileList: React.FC<ProfileListProps> = ({ profiles, onDelete, lo
                 <div className="flex items-center space-x-3 mb-3">
                   <User className="h-5 w-5 text-blue-500" />
                   <h3 className="text-lg font-medium text-gray-900">{profile.name}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBloodGroupColor(profile.bloodGroup)}`}>
-                    {profile.bloodGroup}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBloodGroupColor(profile.blood_group)}`}>
+                    {profile.blood_group}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">{profile.email}</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
                     <Shield className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">{profile.insurance}</span>
+                    <span className="text-gray-600">{profile.insurance_provider}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <FileText className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">{profile.idProof}</span>
+                    <span className="text-gray-600">{profile.insurance_number}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">Created: {formatDate(profile.createdAt)}</span>
+                    <span className="text-gray-600">Created: {formatDate(profile.created_at)}</span>
                   </div>
+                  
+                  {profile.pdf_url && (
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
+                      <a href={profile.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">View Document</a>
+                    </div>
+                  )}
                 </div>
               </div>
 

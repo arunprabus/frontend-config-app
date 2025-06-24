@@ -1,29 +1,34 @@
 import React, { useState } from 'react';
 import { User, Mail, Shield, FileText, Upload, Save } from 'lucide-react';
+import { authService } from '../services/auth.service';
 
 interface ProfileFormData {
   name: string;
-  bloodGroup: string;
-  insurance: string;
-  email: string;
-  idProof: string;
+  blood_group: string;
+  insurance_provider: string;
+  insurance_number: string;
+  pdf_url?: string;
 }
 
 interface ProfileFormProps {
   onSubmit: (data: ProfileFormData) => Promise<void>;
   loading?: boolean;
+  initialData?: ProfileFormData | null;
+  onCancel?: () => void;
 }
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = false }) => {
-  const [formData, setFormData] = useState<ProfileFormData>({
-    name: '',
-    bloodGroup: '',
-    insurance: '',
-    email: '',
-    idProof: ''
-  });
+export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = false, initialData, onCancel }) => {
+  const [formData, setFormData] = useState<ProfileFormData>(
+    initialData || {
+      name: '',
+      blood_group: '',
+      insurance_provider: '',
+      insurance_number: '',
+      pdf_url: ''
+    }
+  );
 
   const [file, setFile] = useState<File | null>(null);
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -52,27 +57,43 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
     setUploadLoading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('document', file);
 
-      const response = await fetch('/api/upload', {
+      const config = {
+        apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+      };
+
+      const response = await fetch(`${config.apiUrl}/upload`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authService.getCurrentUser()?.accessToken}`
+        },
         body: formData
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       const result = await response.json();
       
       if (result.success) {
-        alert(`File uploaded successfully: ${result.data.fileName}`);
+        alert(`✅ Document uploaded successfully!\n\nFile: ${file.name}\nSize: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         setFile(null);
         // Reset file input
         const fileInput = document.getElementById('file-upload') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
+        
+        // Refresh profile to show updated document
+        if (onSubmit) {
+          window.location.reload();
+        }
       } else {
-        alert(`Upload failed: ${result.error}`);
+        alert(`❌ Upload failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Upload failed. Please try again.');
+      alert(`❌ Upload failed: ${error.message || 'Please try again.'}`);
     } finally {
       setUploadLoading(false);
     }
@@ -85,10 +106,10 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
     // Reset form after successful submission
     setFormData({
       name: '',
-      bloodGroup: '',
-      insurance: '',
-      email: '',
-      idProof: ''
+      blood_group: '',
+      insurance_provider: '',
+      insurance_number: '',
+      pdf_url: ''
     });
   };
 
@@ -123,13 +144,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
 
           {/* Blood Group */}
           <div>
-            <label htmlFor="bloodGroup" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="blood_group" className="block text-sm font-medium text-gray-700 mb-2">
               Blood Group
             </label>
             <select
-              id="bloodGroup"
-              name="bloodGroup"
-              value={formData.bloodGroup}
+              id="blood_group"
+              name="blood_group"
+              value={formData.blood_group}
               onChange={handleInputChange}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -141,38 +162,18 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
             </select>
           </div>
 
-          {/* Email */}
+          {/* Insurance Provider */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your email"
-              />
-            </div>
-          </div>
-
-          {/* Insurance */}
-          <div>
-            <label htmlFor="insurance" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="insurance_provider" className="block text-sm font-medium text-gray-700 mb-2">
               Insurance Provider
             </label>
             <div className="relative">
               <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                id="insurance"
-                name="insurance"
-                value={formData.insurance}
+                id="insurance_provider"
+                name="insurance_provider"
+                value={formData.insurance_provider}
                 onChange={handleInputChange}
                 required
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -181,25 +182,46 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
             </div>
           </div>
 
-          {/* ID Proof */}
+          {/* Insurance Number */}
           <div className="md:col-span-2">
-            <label htmlFor="idProof" className="block text-sm font-medium text-gray-700 mb-2">
-              ID Proof Number
+            <label htmlFor="insurance_number" className="block text-sm font-medium text-gray-700 mb-2">
+              Insurance Number
             </label>
             <div className="relative">
               <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                id="idProof"
-                name="idProof"
-                value={formData.idProof}
+                id="insurance_number"
+                name="insurance_number"
+                value={formData.insurance_number}
                 onChange={handleInputChange}
                 required
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter ID proof number (e.g., Driver's License, SSN)"
+                placeholder="Enter insurance number"
               />
             </div>
           </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end space-x-4 mb-6">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Save className="h-4 w-4" />
+            <span>{loading ? 'Saving...' : (initialData ? 'Update Profile' : 'Create Profile')}</span>
+          </button>
         </div>
 
         {/* File Upload Section */}
@@ -220,33 +242,29 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, loading = fa
             </div>
             
             {file && (
-              <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
-                <span className="text-sm text-gray-600">Selected: {file.name}</span>
-                <button
-                  type="button"
-                  onClick={handleFileUpload}
-                  disabled={uploadLoading}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Upload className="h-4 w-4" />
-                  <span>{uploadLoading ? 'Uploading...' : 'Upload'}</span>
-                </button>
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Selected File:</p>
+                    <p className="text-sm text-blue-700">{file.name}</p>
+                    <p className="text-xs text-blue-600">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleFileUpload}
+                    disabled={uploadLoading}
+                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>{uploadLoading ? 'Uploading...' : 'Upload Document'}</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="h-4 w-4" />
-            <span>{loading ? 'Saving...' : 'Save Profile'}</span>
-          </button>
-        </div>
+
       </form>
     </div>
   );

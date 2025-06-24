@@ -6,24 +6,42 @@ export type AppConfig = {
     authentication: boolean;
     fileUpload: boolean;
     notifications: boolean;
+    debugMode?: boolean;
+    dynamodb?: boolean;
   };
   version: string;
   buildTime: string;
+  apiTimeout?: number;
+  logLevel?: string;
+  cognito?: {
+    userPoolId: string;
+    clientId: string;
+    region: string;
+  };
 };
 
 let config: AppConfig | null = null;
 
 const defaultConfig: AppConfig = {
-  apiUrl: 'http://localhost:3000/api',
-  appName: 'React Runtime Config App',
-  environment: 'development',
+  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  appName: import.meta.env.VITE_APP_NAME || 'Health Dashboard',
+  environment: import.meta.env.VITE_APP_ENV || 'development',
   features: {
     authentication: true,
     fileUpload: true,
     notifications: true,
+    debugMode: import.meta.env.VITE_DEBUG_MODE === 'true',
+    dynamodb: true,
   },
   version: '1.0.0',
   buildTime: new Date().toISOString(),
+  apiTimeout: 10000,
+  logLevel: import.meta.env.VITE_LOG_LEVEL || 'debug',
+  cognito: {
+    userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || 'your_user_pool_id',
+    clientId: import.meta.env.VITE_COGNITO_CLIENT_ID || 'your_client_id',
+    region: import.meta.env.VITE_AWS_REGION || 'ap-south-1',
+  },
 };
 
 export async function loadConfig(): Promise<AppConfig> {
